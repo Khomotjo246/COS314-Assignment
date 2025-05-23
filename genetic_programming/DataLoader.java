@@ -16,7 +16,9 @@ public class DataLoader {
                 }
                 String[] tokens = line.split(",");
                 double[] features = new double[5];
-                for (int i = 0; i < 5; i++) features[i] = Double.parseDouble(tokens[i]);
+                for (int i = 0; i < 5; i++) {
+                    features[i] = Double.parseDouble(tokens[i]);
+                }
                 int label = Integer.parseInt(tokens[5]);
                 inputs.add(features);
                 outputs.add(label);

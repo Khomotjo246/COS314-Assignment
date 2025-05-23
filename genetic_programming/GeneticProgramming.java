@@ -6,7 +6,7 @@ public class GeneticProgramming {
     public Individual bestIndividual;
 
 
-    Random rand = new Random(1000);
+    Random rand = new Random(10);
     List<Individual> population = new ArrayList<>();
 
     public GeneticProgramming(String csvPath) {
