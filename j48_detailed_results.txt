@@ -1,0 +1,28 @@
+=== J48 Decision Tree - Detailed Results ===
+
+Random Seed (for CV): 1000
+Tree Size: 61.0
+Number of Leaves: 55.0
+
+=== Training Set Results ===
+Accuracy: 0.5862
+F1-Score: 0.6925
+Precision: 0.5706
+Recall: 0.8807
+
+=== Test Set Results ===
+Accuracy: 0.5779
+F1-Score: 0.4064
+Precision: 0.7037
+Recall: 0.2857
+
+=== Cross-Validation Results ===
+CV Accuracy: 0.5691
+CV F1-Score: 0.6848
+
+=== Confusion Matrix (Test Set) ===
+=== Confusion Matrix ===
+
+   a   b   <-- classified as
+ 114  16 |   a = 0
+  95  38 |   b = 1
