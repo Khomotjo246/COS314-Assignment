@@ -1,6 +1,6 @@
 === J48 Decision Tree - Detailed Results ===
 
-Random Seed (for CV): 1000
+Random Seed (for CV): 40
 Tree Size: 61.0
 Number of Leaves: 55.0
 
@@ -17,8 +17,8 @@ Precision: 0.7037
 Recall: 0.2857
 
 === Cross-Validation Results ===
-CV Accuracy: 0.5691
-CV F1-Score: 0.6848
+CV Accuracy: 0.5621
+CV F1-Score: 0.6765
 
 === Confusion Matrix (Test Set) ===
 === Confusion Matrix ===

@@ -17,21 +17,37 @@ import weka.filters.unsupervised.attribute.Discretize;
 public class j48_runner {
     
     public static void main(String[] args) {
-        try {
-            String trainPath = "Data/BTC_train.csv";
-            String testPath = "Data/BTC_test.csv";
-            int seed = 1000; // Seed for cross-validation
-            
+        try (Scanner scanner = new Scanner(System.in)) {
+            // Request parameters from user
+            System.out.print("Enter path to training CSV file: ");
+            String trainPath = scanner.nextLine().trim();
+
+            System.out.print("Enter path to test CSV file: ");
+            String testPath = scanner.nextLine().trim();
+
+            System.out.print("Enter random seed value: ");
+            int seed = Integer.parseInt(scanner.nextLine().trim());
+
+            System.out.print("Enter J48 confidence factor (e.g., 0.25): ");
+            String confidence = scanner.nextLine().trim();
+
+            System.out.print("Enter minimum instances per leaf (e.g., 2): ");
+            String minInstances = scanner.nextLine().trim();
+
+            System.out.print("Use unpruned tree? (y/n): ");
+            boolean unpruned = scanner.nextLine().trim().equalsIgnoreCase("y");
+
+            // Load data as before...
             System.out.println("\n=== Loading Training Data ===");
             Instances trainData = loadCSVData(trainPath);
-            System.out.println("Training data loaded: " + trainData.numInstances() + " instances, " + 
-                             trainData.numAttributes() + " attributes");
-            
+            System.out.println("Training data loaded: " + trainData.numInstances() + " instances, " +
+                    trainData.numAttributes() + " attributes");
+
             System.out.println("\n=== Loading Test Data ===");
             Instances testData = loadCSVData(testPath);
-            System.out.println("Test data loaded: " + testData.numInstances() + " instances, " + 
-                             testData.numAttributes() + " attributes");
-            
+            System.out.println("Test data loaded: " + testData.numInstances() + " instances, " +
+                    testData.numAttributes() + " attributes");
+
             // Print attribute information
             System.out.println("\n=== Attribute Information ===");
             System.out.println("Training data attributes:");
@@ -106,13 +122,12 @@ public class j48_runner {
             // configure J48 classifier
             System.out.println("\n=== Configuring J48 Decision Tree ===");
             J48 j48 = new J48();
-            
-            // Set J48 parameters
-            String[] options = {
-                // "-U" // Unpruned tree 
-                "-C", "0.25", // Confidence factor for pruning 
-                "-M", "2" 
-            };
+            String[] options;
+            if (unpruned) {
+                options = new String[]{"-U"};
+            } else {
+                options = new String[]{"-C", confidence, "-M", minInstances};
+            }
             j48.setOptions(options);
             
             System.out.println("J48 Configuration:");
@@ -179,7 +194,6 @@ public class j48_runner {
             // Show tree visualization 
             System.out.println("\n=== Tree Visualization ===");
             System.out.print("Would you like to display the tree visualization? (y/n): ");
-            Scanner scanner = new Scanner(System.in);
             String showViz = scanner.nextLine();
             
             if (showViz.toLowerCase().startsWith("y")) {
@@ -194,8 +208,6 @@ public class j48_runner {
             System.out.println("Files generated:");
             System.out.println("- decision_tree_structure.txt");
             System.out.println("- j48_detailed_results.txt");
-            
-            scanner.close();
             
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
