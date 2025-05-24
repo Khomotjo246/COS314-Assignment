@@ -1,18 +1,32 @@
-import java.util.List;
+import java.util.*;
+import java.io.*;
 
 public class Main {
     public static void main(String[] args) {
-        String trainingData = "BTC_train.csv";           // must include labels
-        String testData = "BTC_test.csv";          // must also include labels in 6th column
+        String trainingData = "BTC_train.csv";
+        String testData = "BTC_test.csv";
 
+        // Train on training data
         GeneticProgramming gp = new GeneticProgramming(trainingData);
         gp.run();
 
-        // Load test data with labels
-        List<double[]> testInputs = new java.util.ArrayList<>();
-        List<Integer> testLabels = new java.util.ArrayList<>();
+        // === Evaluate on Training Data ===
+        EvaluationResult trainEval = evaluate(gp, DataLoader.inputs, DataLoader.outputs);
+        System.out.printf("Training Accuracy: %.2f%% | F1 Score: %.4f%n",
+                trainEval.accuracy * 100, trainEval.f1Score);
 
-        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(testData))) {
+        // === Load and Evaluate on Test Data ===
+        List<double[]> testInputs = new ArrayList<>();
+        List<Integer> testLabels = new ArrayList<>();
+        loadCSV(testData, testInputs, testLabels);
+
+        EvaluationResult testEval = evaluate(gp, testInputs, testLabels);
+        System.out.printf("Test Accuracy: %.2f%% | F1 Score: %.4f%n",
+                testEval.accuracy * 100, testEval.f1Score);
+    }
+
+    static void loadCSV(String filePath, List<double[]> inputs, List<Integer> outputs) {
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             boolean isFirstLine = true;
             while ((line = br.readLine()) != null) {
@@ -21,27 +35,48 @@ public class Main {
                     continue; // skip header
                 }
                 String[] tokens = line.split(",");
-                double[] features = new double[5];
-                for (int i = 0; i < 5; i++) features[i] = Double.parseDouble(tokens[i]);
-                int label = Integer.parseInt(tokens[5]);
-                testInputs.add(features);
-                testLabels.add(label);
+                double[] input = new double[5];
+                for (int i = 0; i < 5; i++) {
+                    input[i] = Double.parseDouble(tokens[i]);
+                }
+                int output = Integer.parseInt(tokens[5]);
+                inputs.add(input);
+                outputs.add(output);
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
-            return;
+        }
+    }
+
+    static EvaluationResult evaluate(GeneticProgramming gp, List<double[]> inputs, List<Integer> labels) {
+        int correct = 0, tp = 0, fp = 0, fn = 0;
+
+        for (int i = 0; i < inputs.size(); i++) {
+            int actual = labels.get(i);
+            int predicted = gp.predict(inputs.get(i));
+
+            if (predicted == actual) correct++;
+            if (predicted == 1 && actual == 1) tp++;
+            if (predicted == 1 && actual == 0) fp++;
+            if (predicted == 0 && actual == 1) fn++;
         }
 
-        // Evaluate accuracy
-        int correct = 0;
-        for (int i = 0; i < testInputs.size(); i++) {
-            int prediction = gp.predict(testInputs.get(i));
-            if (prediction == testLabels.get(i)) {
-                correct++;
-            }
-        }
+        double accuracy = (double) correct / inputs.size();
+        double precision = (tp + fp) == 0 ? 0 : (double) tp / (tp + fp);
+        double recall = (tp + fn) == 0 ? 0 : (double) tp / (tp + fn);
+        double f1 = (precision + recall == 0) ? 0 : 2 * precision * recall / (precision + recall);
 
-        double accuracy = (double) correct / testInputs.size() * 100.0;
-        System.out.printf("Prediction Accuracy: %.2f%% (%d/%d correct)%n", accuracy, correct, testInputs.size());
+        return new EvaluationResult(accuracy, f1);
+    }
+}
+
+// Simple container for evaluation results
+class EvaluationResult {
+    double accuracy;
+    double f1Score;
+
+    EvaluationResult(double accuracy, double f1Score) {
+        this.accuracy = accuracy;
+        this.f1Score = f1Score;
     }
 }
