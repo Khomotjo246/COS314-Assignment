@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 def sigmoid(n):
     return 1/ (1 + np.exp(-n))
@@ -65,15 +64,41 @@ for epoch in range(epochs):
             preds.append(a[0][0])
         preds = np.array(preds).reshape(-1, 1)
         loss = np.mean((yTrain.reshape(-1, 1) - preds) ** 2)
+        loss = round(loss, 4)
         print(f"Epoch {epoch}, Loss: {loss}")
 
+results = []
+preds = []
 correct = 0
 for x,y in zip(xTest, yTest):
     a = x.reshape(1, -1)
     for w, b in zip(weights, biases):
         a = sigmoid(np.dot(a, w) + b)
-    prediction = 1 if a[0][0] > 0.5 else 0
-    correct += prediction == y[0]
+    pred = int(a[0][0] > 0.5)
+    correct += pred == y[0]
+    preds.append(pred)
+    results.append({
+        "Input_Open": x[0],
+        "Input_High": x[1],
+        "Input_Low": x[2],
+        "Input_Close": x[3],
+        "Input_AdjClose": x[4] if len(x) > 4 else None,
+        "Actual": int(y[0]),
+        "Predicted": pred
+    })
 
-accuracy = correct / len(yTest)
-print(f"Test accuracy: {accuracy * 100}%")
+accuracy = round((correct / len(yTest))*100, 4)
+print(f"Test accuracy: {accuracy}%")
+
+results = pd.DataFrame(results)
+
+with pd.ExcelWriter("BTC prediction results.xlsx", engine="openpyxl") as writer:
+    results.to_excel(writer, sheet_name="BTC preditctions", index=False)
+
+    summary = pd.DataFrame([{
+        "Metric": "Test Accuracy (%)",
+        "Value": accuracy
+    }])
+    summary.to_excel(writer, sheet_name="Summary", index= False)
+
+print("Written to excel file")

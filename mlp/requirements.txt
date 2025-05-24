@@ -1,1 +1,7 @@
 # Python dependencies
+Numpy: pip install numpy
+Pandas: pip install Pandas
+Openpyxl:  pip install openpyxl
+
+# TO run
+py mlp_model.py
