@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.metrics import accuracy_score, f1_score
 
 def sigmoid(n):
     return 1/ (1 + np.exp(-n))
@@ -17,7 +18,7 @@ xTest = testData.iloc[:, :-1].values
 yTest = testData.iloc[:, -1].values.reshape(-1, 1)
 
 inputSize = xTrain.shape[1]
-hiddenSize = [12] * 3   # 4 hidden layers with 12 neurons
+hiddenSize = [12] * 3   # 3 hidden layers with 12 neurons
 outputSize = 1
 layerSize = [inputSize] + hiddenSize + [outputSize]
 
@@ -92,6 +93,19 @@ print(f"Test accuracy: {accuracy}%")
 
 results = pd.DataFrame(results)
 
+trainPreds = []
+for x in xTrain:
+    a = x.reshape(1, -1)
+    for w,b in zip(weights, biases):
+        a = sigmoid(np.dot(a, w) + b)
+    trainPreds.append(int(a[0][0] > 0.5))
+
+trainAccuracy = round(accuracy_score(yTrain, trainPreds) * 100, 4)
+train_f1 = round(f1_score(yTrain, trainPreds), 4)
+
+testAccuracy = round(accuracy_score(yTest, preds) * 100, 4)
+test_f1 = round(f1_score(yTest, preds), 4)
+
 with pd.ExcelWriter("BTC prediction results.xlsx", engine="openpyxl") as writer:
     results.to_excel(writer, sheet_name="BTC preditctions", index=False)
 
@@ -100,5 +114,15 @@ with pd.ExcelWriter("BTC prediction results.xlsx", engine="openpyxl") as writer:
         "Value": accuracy
     }])
     summary.to_excel(writer, sheet_name="Summary", index= False)
+
+    comparison = pd.DataFrame([{
+        "Model": "Multi-layer perception",
+        "Seed": 41,
+        "Training accuracy": trainAccuracy,
+        "Training F1": train_f1,
+        "Testing accuracy": testAccuracy,
+        "Testing F1": test_f1
+    }])
+    comparison.to_excel(writer, sheet_name="Model comparison", index=False)
 
 print("Written to excel file")
